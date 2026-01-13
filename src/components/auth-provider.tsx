@@ -11,12 +11,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        if (!auth || typeof auth.onAuthStateChanged !== "function") {
+            setLoading(false);
+            return;
+        }
+
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
             setUser(currentUser);
             setLoading(false);
         });
         return () => unsubscribe();
     }, []);
+
+    if (!auth || typeof auth.onAuthStateChanged !== "function") {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-6 text-center">
+                <h1 className="text-xl font-black uppercase tracking-widest text-orange-500 mb-2">Configuration Error</h1>
+                <p className="text-zinc-500 text-sm max-w-md">
+                    Firebase is not initialized. Please check your environment variables (NEXT_PUBLIC_FIREBASE_*) in Vercel settings.
+                </p>
+            </div>
+        );
+    }
 
     return (
         <AuthContext.Provider value={{ user, loading }}>
